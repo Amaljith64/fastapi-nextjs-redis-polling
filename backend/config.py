@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     RABBITMQ_USER: str = os.getenv('RABBITMQ_USER', 'imgconv')
     RABBITMQ_PASS: str = os.getenv('RABBITMQ_PASS', 'imgconv123')
 
+    #Redis settings
+    REDIS_URL: str = "redis://localhost:6379"
+    RATE_LIMIT_PER_MINUTE: int = 60
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import axios from 'axios';
+import axios,{AxiosError} from 'axios';
 import { FileImage, UploadCloud, X, Download, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { Input } from './ui/input';
@@ -144,8 +144,12 @@ export default function ImageUpload() {
           pollJobStatus(job.job_id, newUploadedFiles[index]);
         });
       }
-    } catch {
-      setError('Failed to upload files. Please try again.');
+    } catch(error) {
+      const errorMessage = error instanceof AxiosError 
+        ? error.response?.data?.detail || error.response?.data?.message || error.message
+        : 'An unexpected error occurred';
+      
+      setError(errorMessage);
       setFilesToUpload(prev => prev.map(file => ({ ...file, progress: 0, status: 'failed' })));
     }
   };
