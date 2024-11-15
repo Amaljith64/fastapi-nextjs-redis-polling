@@ -6,6 +6,7 @@ import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Progress } from './ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { BACKEND_URL } from '@/lib/config';
 
 interface FileUploadProgress {
   progress: number;
@@ -76,7 +77,7 @@ export default function ImageUpload() {
   const handleDownload = async (file: FileUploadProgress) => {
     if (file.convertedUrl) {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000${file.convertedUrl}`, { responseType: 'blob' });
+        const response = await axios.get(`${BACKEND_URL}${file.convertedUrl}`, { responseType: 'blob' });
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');
         link.href = url;
@@ -102,7 +103,7 @@ export default function ImageUpload() {
     };
 
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/status/${jobId}`);
+      const response = await axios.get(`${BACKEND_URL}/api/status/${jobId}`);
       const { status, output_path, error } = response.data;
 
       if (status === 'completed') {
@@ -127,7 +128,7 @@ export default function ImageUpload() {
     try {
       setFilesToUpload(prev => prev.map(file => ({ ...file, status: 'uploading' })));
 
-      const response = await axios.post('http://127.0.0.1:8000/api/upload/', formData, {
+      const response = await axios.post(`${BACKEND_URL}/api/upload/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = progressEvent.total ? Math.round((progressEvent.loaded * 100) / progressEvent.total) : 0;

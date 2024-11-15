@@ -2,11 +2,12 @@ from fastapi import FastAPI, HTTPException, Request, Depends
 from redis import Redis
 from functools import wraps
 from typing import Callable
+from config import  Settings
 
 
-redis = Redis(host='redis', port=6379, db=0)
-RATE_LIMIT_DURATION = 60
-MAX_REQUESTS = 10
+settings=Settings()
+
+redis = Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 
 
 def rate_limit():
@@ -18,10 +19,10 @@ def rate_limit():
 
             current = redis.get(key)
             if current is None:
-                redis.setex(key,RATE_LIMIT_DURATION,1)
+                redis.setex(key,settings.RATE_LIMIT_DURATION,1)
             else:
                 current = int(current)
-                if current >= MAX_REQUESTS:
+                if current >= settings.MAX_REQUESTS:
                     raise HTTPException(
                         status_code=429,
                         detail="Too many requests. Please try again later"
