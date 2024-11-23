@@ -50,7 +50,7 @@ class Settings(BaseSettings):
 
     #rate limit settings
     RATE_LIMIT_DURATION: str =os.getenv('RATE_LIMIT_DURATION','60')
-    MAX_REQUESTS: str =os.getenv('MAX_REQUESTS','10')
+    MAX_REQUESTS: int =os.getenv('MAX_REQUESTS',10)
 
     @property
     def DATABASE_URL(self) -> str:

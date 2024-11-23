@@ -1,3 +1,4 @@
+'use client'
 import React, { useCallback, useState } from 'react';
 import axios,{AxiosError} from 'axios';
 import { FileImage, UploadCloud, X, Download, CheckCircle, AlertCircle, Clock } from 'lucide-react';

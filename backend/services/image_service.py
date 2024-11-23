@@ -1,3 +1,4 @@
+import json
 from fastapi import HTTPException, UploadFile
 from typing import List
 from sqlalchemy.orm import Session
@@ -6,10 +7,15 @@ from pathlib import Path
 from config import Settings
 from models import ConversionJob, ConversionStatus
 from worker import convert_image
+from redis import Redis
 
 class ImageService:
     def __init__(self, settings: Settings):
         self.settings = settings
+        self.redis = Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT,decode_responses=True)
+
+    def _get_redis_key(self, job_id: str) -> str:
+        return f"job_status:{job_id}"
 
     async def validate_image(self, file: UploadFile) -> bool:
         if file.size > self.settings.MAX_FILE_SIZE:
@@ -69,6 +75,19 @@ class ImageService:
             db.add(job)
             db.commit()
 
+            # Add initial status to Redis
+            status_data = {
+                "status": ConversionStatus.QUEUED,
+                "input_path": f"/uploads/{input_filename}",
+                "output_path": None,
+                "output_format": output_format,
+                "error": None
+            }
+
+            self.redis.set(self._get_redis_key(job_id),
+                           json.dumps(status_data))
+
+
             convert_image.delay(job_id,output_format)
 
             return {
@@ -88,6 +107,15 @@ class ImageService:
             await file.close()
 
     async def get_status(self,job_id:str,db:Session):
+
+        redis_key = self._get_redis_key(job_id)
+        status_data = self.redis.get(redis_key)
+
+        if status_data:
+            print('Got data from redis')
+            return json.loads(status_data)
+        print('Data missing querried DB')
+        # this will only run if not in redis
         job = db.query(ConversionJob).filter(ConversionJob.id == job_id).first()
 
         if not job:
