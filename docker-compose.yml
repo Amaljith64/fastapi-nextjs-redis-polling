@@ -37,6 +37,8 @@ services:
       - postgres
       - redis
       - rabbitmq
+    env_file:
+      - .env
       
   celery:
     build:
@@ -50,13 +52,20 @@ services:
       - backend
       - redis
       - rabbitmq
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - backend
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
 
 volumes:
