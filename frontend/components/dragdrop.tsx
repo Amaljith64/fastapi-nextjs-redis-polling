@@ -166,6 +166,8 @@ export default function ImageUpload() {
         </Alert>
       )}
 
+      <h1 className="text-3xl font-bold mb-6">Polling System</h1>
+
       <div className="mb-6">
         <label
           {...getRootProps()}
